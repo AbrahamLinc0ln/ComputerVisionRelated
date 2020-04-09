@@ -50,7 +50,7 @@ def roi(image):
 
 # Find the lines that fit the lane the best and generate an image to indicate this
 def line_finder(image, rho = 1, theta = np.pi/180, thresh = 10, minLength = 20, maxGap = 100):
-	global rightSlope, leftSlope, rightIntercept, leftIntercept
+	rightSlope, leftSlope, rightIntercept, leftIntercept = [],[],[],[]
 	# Find lines using Hough Lines
 	lines = cv2.HoughLinesP(image, rho, theta, thresh, np.array([]), minLineLength=minLength, maxLineGap=maxGap)
 
@@ -107,58 +107,60 @@ def line_finder(image, rho = 1, theta = np.pi/180, thresh = 10, minLength = 20, 
 		pass
 
 
-# Load test images
-imageDir = 'testImg/'
-imageFiles = os.listdir(imageDir)
-imageList = []
-for i in range(0, len(imageFiles)):
-	imageList.append(mpimg.imread(imageDir+imageFiles[i]))
+def main():
+	# Load test images
+	imageDir = 'testImg/'
+	imageFiles = os.listdir(imageDir)
+	imageList = []
+	for i in range(0, len(imageFiles)):
+		imageList.append(mpimg.imread(imageDir+imageFiles[i]))
 
-# display test images
-#display_images(imageList)
+	# display test images
+	#display_images(imageList)
 
-# convert images to HSV color space
-hsvImages = list(map(cv2.cvtColor, imageList, [cv2.COLOR_RGB2HLS]*len(imageList)))
+	# convert images to HSV color space
+	hsvImages = list(map(cv2.cvtColor, imageList, [cv2.COLOR_RGB2HLS]*len(imageList)))
 
-# upper and lower color bounds
-whiteLower = np.array([0,190,0])
-whiteUpper = np.array([255,255,255])
-yellowLower = np.array([10,0,90])
-yellowUpper = np.array([50,255,255])
+	# upper and lower color bounds
+	whiteLower = np.array([0,190,0])
+	whiteUpper = np.array([255,255,255])
+	yellowLower = np.array([10,0,90])
+	yellowUpper = np.array([50,255,255])
 
-# filter to get yellow and white images
-whiteImages = list(map(color_filter, hsvImages, [whiteLower]*len(hsvImages), [whiteUpper]*len(hsvImages)))
-yellowImages = list(map(color_filter, hsvImages, [yellowLower]*len(hsvImages), [yellowUpper]*len(hsvImages)))
+	# filter to get yellow and white images
+	whiteImages = list(map(color_filter, hsvImages, [whiteLower]*len(hsvImages), [whiteUpper]*len(hsvImages)))
+	yellowImages = list(map(color_filter, hsvImages, [yellowLower]*len(hsvImages), [yellowUpper]*len(hsvImages)))
 
-# combine resulting images
-filteredImages = list(map(cv2.bitwise_or,whiteImages,yellowImages))
-#display_images(filteredImages)
+	# combine resulting images
+	filteredImages = list(map(cv2.bitwise_or,whiteImages,yellowImages))
+	#display_images(filteredImages)
 
-# apply roi to images
-roiImages = list(map(roi,filteredImages))
-#display_images(roiImages)
+	# apply roi to images
+	roiImages = list(map(roi,filteredImages))
+	#display_images(roiImages)
 
-# convert images to grayscale
-rbgImages = list(map(cv2.cvtColor, roiImages, [cv2.COLOR_HLS2RGB]*len(imageList)))
-grayImages = list(map(cv2.cvtColor, roiImages, [cv2.COLOR_RGB2GRAY]*len(imageList)))
-#display_images(grayImages, cmap = 'gray')
+	# convert images to grayscale
+	rbgImages = list(map(cv2.cvtColor, roiImages, [cv2.COLOR_HLS2RGB]*len(imageList)))
+	grayImages = list(map(cv2.cvtColor, roiImages, [cv2.COLOR_RGB2GRAY]*len(imageList)))
+	#display_images(grayImages, cmap = 'gray')
 
-# use canny edge detection
-edgeImages = list(map(cv2.Canny, grayImages, [50]*len(imageList), [120]*len(imageList)))
-#display_images(edgesImages, cmap = 'gray')
+	# use canny edge detection
+	edgeImages = list(map(cv2.Canny, grayImages, [50]*len(imageList), [120]*len(imageList)))
+	#display_images(edgesImages, cmap = 'gray')
 
-# detect lines and choose the best ones
-rightSlope, leftSlope, rightIntercept, leftIntercept = [],[],[],[]
+	# detect lines and choose the best ones
+	lineImages = list(map(line_finder, edgeImages))
+	#display_images(lineImages)
 
-lineImages = list(map(line_finder, edgeImages))
-#display_images(lineImages)
-
-#Combine the original image with the detected lane
-finale = list(map(cv2.addWeighted, imageList, [1]*len(imageList), lineImages, [0.75]*len(imageList), [0]*len(imageList)))
-display_images(finale)
+	#Combine the original image with the detected lane
+	finale = list(map(cv2.addWeighted, imageList, [1]*len(imageList), lineImages, [0.75]*len(imageList), [0]*len(imageList)))
+	display_images(finale)
 	
 
-
+if __name__ == '__main__':
+    print(__doc__)
+    main()
+    cv2.destroyAllWindows()
 
 
 
