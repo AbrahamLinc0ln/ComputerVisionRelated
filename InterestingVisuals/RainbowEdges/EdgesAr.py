@@ -49,7 +49,7 @@ def main():
     cv2.imshow('Edge', edgeImage)
 
     # convert edges to rainbow edges
-    cEdge = edge2rainbow(edgeImage)
+    cEdge = edge2rainbowCircle(edgeImage)
     colorEdge = cv2.cvtColor(cEdge, cv2.COLOR_HLS2BGR)
     cv2.imshow('Color Edge', colorEdge)
 
